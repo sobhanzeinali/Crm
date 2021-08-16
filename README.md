@@ -1,4 +1,4 @@
-# crm
+# Crm
 This is my first project in django
 # How to Install
 ### Please first execute sql script, then change password of mysql in settings.py file. 
