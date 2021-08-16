@@ -1,10 +1,11 @@
 from django.http import request
 from django.shortcuts import redirect, render
-from .forms import CreateUserForm
-from .models import Customer
+from .forms import CreateUserForm, OrderForm
+from .models import Customer, Order
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
+from .decorators import admin_only, allowed_users
 # Create your views here.
 
 
@@ -29,7 +30,7 @@ def loginPage(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponse("Login sucessfully")
+            return redirect('home')
         else:
             messages.info(request, "Username or password is incorrect!")
 
@@ -39,3 +40,57 @@ def loginPage(request):
 def logoutUser(request):
     logout(request)
     return redirect('login')
+
+@admin_only
+def home(request):
+    orders = Order.objects.all()
+    customers = Customer.objects.all()
+
+    total_customer = customers.count()
+    total_orders = orders.count()
+
+    delivered = orders.filter(status="Delivered").count()
+    pending = orders.filter(status="Pending").count()
+
+    context = {'orders': orders, 'customers': customers,
+               'total_orders': total_orders, 'delivered': delivered,
+               'pending': pending
+               }
+
+    return render(request, "accounts/dashboard.html", context)
+
+@allowed_users(allowed_roles=['customer'])
+def userPage(request):
+    orders = request.user.customer.order_set.all()
+    total_orders = orders.count()
+    delivered = orders.filter(status="Delivered").count()
+    pending = orders.filter(status="Pending").count()
+
+    context = {'orders': orders, 'total_orders': total_orders, 'delivered': delivered,
+               'pending': pending
+               }
+    return render(request, 'accounts/user.html', context)
+
+
+def updateOrder(request, pk):
+    form = OrderForm()
+    order = Order.objects.get(id=pk)
+    if request.method == 'POST':
+        form = OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+
+    context = {'form': form}
+    return render(request, 'accounts/order_form.html', context)
+
+
+def deleteOrder(request, pk):
+    order = Order.objects.get(id=pk)
+    if request.method == 'POST':
+        order.delete()
+        return redirect("/")
+
+    context = {'item': order}
+
+    return render(request, "accounts/delete.html", context)

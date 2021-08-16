@@ -30,7 +30,8 @@ class Product(models.Model):
     description = models.CharField(max_length=200, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     tags = models.ManyToManyField(Tag)
-
+    def __str__(self) :
+        return self.name
 
 class Order (models.Model):
     STATUS = (
