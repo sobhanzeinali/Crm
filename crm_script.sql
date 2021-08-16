@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.7.35, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: crm
+-- Host: 127.0.0.1    Database: Crm
 -- ------------------------------------------------------
 -- Server version	5.7.35-0ubuntu0.18.04.1
 
